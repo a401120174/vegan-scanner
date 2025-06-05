@@ -20,8 +20,7 @@ import {
 interface ScanResult {
   ocrText: string;
   result: {
-    vegetarian: boolean;
-    vegan: boolean;
+    type: "全素" | "蛋奶素" | "五葷素" | "非素食" | "無法判斷";
     reasoning: string;
     riskyKeywords: string[];
   }
@@ -45,6 +44,14 @@ export default function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scanId = `scan-${Date.now()}`;
+  
+  // 重置掃描狀態函數
+  const resetScanState = () => {
+    setScanResult(null);
+    setScanImage(null);
+    setUploadError(null);
+    setIsLoading(false);
+  };
   
   // 啟動相機 (在SCAN頁面時)
   useEffect(() => {
@@ -161,25 +168,39 @@ export default function App() {
   };
 
   // 根據素食類型獲取結果描述
-  const getResultInfo = (isVegan: boolean, isVegetarian: boolean) => {
-    if (isVegan) {
-      return {
-        label: '全素',
-        color: 'bg-green-100 text-green-800 hover:bg-green-200',
-        description: '這是純素食品，不含任何動物來源成分'
-      };
-    } else if (isVegetarian) {
-      return {
-        label: '蛋奶素',
-        color: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-        description: '這是蛋奶素食品，含有蛋/奶成分，不含肉類'
-      };
-    } else {
-      return {
-        label: '非素食',
-        color: 'bg-red-100 text-red-800 hover:bg-red-200',
-        description: '這不是素食品，含有動物來源成分'
-      };
+  const getResultInfo = (type: "全素" | "蛋奶素" | "五葷素" | "非素食" | "無法判斷") => {
+    switch (type) {
+      case "全素":
+        return {
+          label: '全素',
+          color: 'bg-green-100 text-green-800 hover:bg-green-200',
+          description: '這是純素食品，不含任何動物來源成分及五辛'
+        };
+      case "蛋奶素":
+        return {
+          label: '蛋奶素',
+          color: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+          description: '這是蛋奶素食品，含有蛋/奶成分，不含肉類與五辛'
+        };
+      case "五葷素":
+        return {
+          label: '五葷素',
+          color: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+          description: '這是五葷素食品，不含肉類，但含有蔥、蒜等五辛成分'
+        };
+      case "非素食":
+        return {
+          label: '非素食',
+          color: 'bg-red-100 text-red-800 hover:bg-red-200',
+          description: '⚠️ 這不是素食品，含有肉、魚、雞或其他動物性成分'
+        };
+      case "無法判斷":
+      default:
+        return {
+          label: '無法判斷',
+          color: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+          description: '無法判斷食品類型，請參考詳細分析說明'
+        };
     }
   };
 
@@ -187,38 +208,34 @@ export default function App() {
   const renderHomePage = () => {
     return (
       <div className="flex flex-col items-center min-h-screen bg-background">
+        {/* Banner Image - Full Width */}
+        <div className="w-full max-w-4xl mb-2">
+          <AspectRatio ratio={3/2}>
+            <Image
+              src="/banner.png"
+              alt="素食掃描儀"
+              fill
+              priority
+              className="object-cover"
+            />
+          </AspectRatio>
+        </div>
         <main className="flex flex-col w-full max-w-md mx-auto px-4 py-6">
-          {/* Banner Image */}
-          <Card className="border-none shadow-lg overflow-hidden mb-6">
-            <CardContent className="p-0">
-              <AspectRatio ratio={16/9}>
-                <Image
-                  src="/vegan-scanner-banner.svg"
-                  alt="素食掃描儀"
-                  fill
-                  priority
-                  className="object-cover"
-                />
-              </AspectRatio>
-            </CardContent>
-          </Card>
           
           {/* 標題和簡介 */}
-          <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="text-3xl font-bold text-center" style={{ color: '#4CAF50' }}>
-                素食掃描儀
+              <CardTitle className="text-3xl font-bold text-center mb-2" style={{ color: '#4CAF50' }}>
+                素食掃描器
               </CardTitle>
-              <CardDescription className="text-center">
+              <CardDescription className="text-center mb-4">
                 快速辨識食品包裝是否為素食可食用！
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="mb-6">
               <p className="text-center text-muted-foreground">
-                只需拍攝食品包裝照片，我們的智能系統將立即告訴您該食品是否適合您的飲食需求。
+                只需拍攝食品包裝照片，我們的智能AI系統將立即告訴您該食品是否適合您的飲食需求。
               </p>
             </CardContent>
-          </Card>
           
           {/* 開始掃描按鈕 */}
           <Button 
@@ -251,7 +268,10 @@ export default function App() {
           <Button 
             variant="link" 
             className="text-primary p-0 flex items-center gap-2"
-            onClick={() => setCurrentPage(PageType.HOME)}
+            onClick={() => {
+              resetScanState();
+              setCurrentPage(PageType.HOME);
+            }}
           >
             <ArrowLeftIcon className="h-6 w-6" />
             返回首頁
@@ -375,10 +395,12 @@ export default function App() {
               <CardContent className="text-center">
                 <p>無法找到掃描結果，請重新掃描。</p>
               </CardContent>
-              <CardFooter className="flex justify-center">
-                <Button onClick={() => setCurrentPage(PageType.SCAN)}>
-                  重新掃描
-                </Button>
+              <CardFooter className="flex justify-center">              <Button onClick={() => {
+                resetScanState();
+                setCurrentPage(PageType.SCAN);
+              }}>
+                重新掃描
+              </Button>
               </CardFooter>
             </Card>
           </main>
@@ -386,7 +408,7 @@ export default function App() {
       );
     }
     
-    const resultInfo = getResultInfo(scanResult.result.vegan, scanResult.result.vegetarian);
+    const resultInfo = getResultInfo(scanResult.result.type);
     
     return (
       <div className="flex flex-col min-h-screen w-full max-w-md mx-auto px-4 py-6">
@@ -395,7 +417,10 @@ export default function App() {
           <Button 
             variant="link" 
             className="text-primary p-0 flex items-center gap-2"
-            onClick={() => setCurrentPage(PageType.SCAN)}
+            onClick={() => {
+              resetScanState();
+              setCurrentPage(PageType.SCAN);
+            }}
           >
             <ArrowLeftIcon className="h-6 w-6" />
             返回掃描
@@ -429,46 +454,59 @@ export default function App() {
                 </div>
               )}
               
-              <div className="mb-4 text-center">
-                <Badge className={resultInfo.color + " text-lg py-2 px-6"}>
-                  {resultInfo.label}
+              <div className="mb-6 text-center">
+                <Badge 
+                  className={`${resultInfo.color} text-lg py-2 px-6 font-medium shadow-sm ${resultInfo.label === '非素食' ? 'animate-pulse border border-red-500' : ''}`}
+                >
+                  {resultInfo.label === '非素食' ? '⚠️ 非素食 ⚠️' : resultInfo.label}
                 </Badge>
-                <p className="mt-2 text-muted-foreground">
+                <p className="mt-3 text-muted-foreground">
                   {resultInfo.description}
                 </p>
               </div>
               
               <div className="w-full">
                 <h3 className="text-lg font-medium mb-2">分析說明</h3>
-                <div className="p-3 bg-muted rounded-lg mb-4 text-sm">
+                <div className={`p-4 rounded-lg mb-4 text-sm ${scanResult.result.type === '非素食' 
+                  ? 'bg-red-50 border-l-4 border-red-500' 
+                  : 'bg-muted border-l-4 border-primary'}`}
+                >
                   <p className="whitespace-pre-wrap">{scanResult.result.reasoning}</p>
                 </div>
 
-                <h3 className="text-lg font-medium mb-2">OCR 識別文字</h3>
-                <div className="p-3 bg-muted rounded-lg mb-4 text-sm">
-                  <p className="whitespace-pre-wrap">{scanResult.ocrText}</p>
-                </div>
-               
                 {scanResult.result.riskyKeywords.length > 0 && (
                   <>
-                    <h3 className="text-lg font-medium mb-2">有疑慮的成分</h3>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {scanResult.result.riskyKeywords.map((keyword, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="outline"
-                          className="border-red-300 text-red-700"
-                        >
-                          {keyword}
-                        </Badge>
-                      ))}
+                    <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                      <span>有疑慮的成分</span>
+                      <span className="text-xs text-red-600 font-normal">(可能含動物性或五辛成分)</span>
+                    </h3>
+                    <div className="p-4 bg-red-50 rounded-lg mb-4">
+                      <div className="flex flex-wrap gap-2">
+                        {scanResult.result.riskyKeywords.map((keyword, index) => (
+                          <Badge 
+                            key={index} 
+                            variant="outline"
+                            className="border-red-300 text-red-700 text-sm py-1"
+                          >
+                            {keyword}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </>
                 )}
+
+                <h3 className="text-lg font-medium mb-2">OCR 識別文字</h3>
+                <div className="p-3 bg-muted rounded-lg mb-4 text-xs opacity-80">
+                  <p className="whitespace-pre-wrap">{scanResult.ocrText}</p>
+                </div>
               </div>
             </CardContent>
             <CardFooter className="flex justify-center">
-              <Button onClick={() => setCurrentPage(PageType.HOME)}>
+              <Button onClick={() => {
+                resetScanState();
+                setCurrentPage(PageType.HOME);
+              }}>
                 返回首頁
               </Button>
             </CardFooter>

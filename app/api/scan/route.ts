@@ -42,21 +42,36 @@ export async function POST(req: NextRequest) {
     const ocrText = ocrResult.textAnnotations?.[0]?.description || '';
 
     if (!ocrText.trim()) {
-      return NextResponse.json({ error: 'OCR 未偵測到文字' }, { status: 400 });
+      return NextResponse.json({ error: '未偵測到文字, 請明確拍攝食品成分表' }, { status: 400 });
     }
 
     // 2. Gemini 處理
-    const prompt = `
-你是營養專家。請根據提供的 ingredients 列表，判斷這個食品是否符合「奶蛋素 (vegetarian)」與「全素 (vegan)」。
+const prompt = `
+你是營養專家。請根據提供的 ingredients 列表，判斷這個食品是否屬於以下分類之一，並說明原因。
 
-請回傳 JSON 格式如下：
+請根據以下分類標準進行判斷：
+
+1.「全素」：完全不含任何動物性成分，也不含五辛（如蔥、蒜、蒜粉、蔥粉等）
+2.「蛋奶素」：可含蛋與奶，但不含肉類與五辛
+3.「五葷素」：不含肉類，但含五辛成分（蔥、蒜、洋蔥等）
+4.「非素食」：含有肉、魚、雞、牛、豬、海鮮、動物萃取物、明膠、魚露、蜂蜜、豬油、雞粉等明確動物性成分
+5.「無法判斷」：若 ingredients 資訊過少、不清楚、非成分表格式等，請明確說明並標為無法判斷
+
+以下是你應回傳的 JSON 格式（使用繁體中文）：
+
 {
-  "vegetarian": boolean,
-  "vegan": boolean,
-  "reasoning": string,
-  "riskyKeywords": string[]
+  "type": "全素" | "蛋奶素" | "五葷素" | "非素食" | "無法判斷",
+  "reasoning": "簡要說明為何屬於此分類或為何無法判斷",
+  "riskyKeywords": ["出現的疑似動物性或五辛關鍵字"]
 }
-請特別注意「萃取物（如 chicken extract、beef flavor）」或「動物來源添加物」。全用繁體中文回應
+
+請特別注意以下：
+- 以下視為五辛：蔥、蒜、蔥粉、蒜粉、青蔥、洋蔥、大蒜萃取物等
+- 以下視為動物來源：雞、豬、牛、魚、蝦、動物萃取物、明膠、乳清、蜂蜜、魚露、豬油、雞粉、動物脂肪等
+- 若 ingredients 太短（少於 20 字）或無法辨認內容，也請回傳「無法判斷」
+- 如果 ingredients 中提到「與肉類同一產線製造」或「生產線可能含有蛋、魚、牛奶成分」等資訊，不影響素食分類判定。但請在 reasoning 補充說明：「若您對生產線混用有所顧慮，請自行判斷是否食用。」
+
+請務必依格式回傳有效 JSON，不要加註說明文字或 Markdown，僅回傳 JSON。
 `;
 
     const geminiRes = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -78,6 +93,6 @@ export async function POST(req: NextRequest) {
 
   } catch (err) {
     console.error('[SCAN ERROR]', err);
-    return NextResponse.json({ error: 'OCR/GPT 分析失敗' }, { status: 500 });
+    return NextResponse.json({ error: '分析失敗, 請稍後再嘗試或是聯繫管理員' }, { status: 500 });
   }
 }
