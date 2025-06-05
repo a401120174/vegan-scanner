@@ -1,6 +1,4 @@
-import { useRef, useEffect } from 'react';
 import { ArrowLeftIcon } from "@/components/icons";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
