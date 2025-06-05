@@ -15,6 +15,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { OfflineNotification } from "@/components/offline-notification";
+import { InstallPWA } from "@/components/install-pwa";
+import { PWAFeatureTest } from "@/components/pwa-feature-test";
 
 // API返回的分析結果類型
 interface ScanResult {
@@ -249,12 +252,23 @@ export default function App() {
             開始掃描
           </Button>
           
+          {/* PWA 功能測試元件 */}
+          <div className="w-full flex justify-center mt-6">
+            <PWAFeatureTest />
+          </div>
+          
           {/* 底部信息 */}
           <footer className="mt-12 text-center text-xs text-muted-foreground">
             <p>為健康與環保的生活方式而設計</p>
             <p className="mt-1">© {new Date().getFullYear()} 素食掃描儀</p>
           </footer>
         </main>
+        
+        {/* 離線通知 */}
+        <OfflineNotification />
+        
+        {/* PWA 安裝提示 */}
+        <InstallPWA />
       </div>
     );
   };
@@ -328,10 +342,10 @@ export default function App() {
                 variant="default"
                 size="lg"
                 className="bg-primary hover:bg-primary/90 rounded-full px-8"
-                disabled={isLoading || !hasCamera}
+                disabled={isLoading || !hasCamera || !navigator.onLine}
                 onClick={captureImage}
               >
-                {isLoading ? '處理中...' : '拍攝照片'}
+                {isLoading ? '處理中...' : !navigator.onLine ? '離線模式無法掃描' : '拍攝照片'}
               </Button>
               
               <Sheet>
@@ -366,6 +380,9 @@ export default function App() {
         <footer className="mt-6 text-center text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} 素食掃描儀</p>
         </footer>
+        
+        {/* 離線通知 */}
+        <OfflineNotification />
       </div>
     );
   };
@@ -404,6 +421,9 @@ export default function App() {
               </CardFooter>
             </Card>
           </main>
+          
+          {/* 離線通知 */}
+          <OfflineNotification />
         </div>
       );
     }
@@ -516,6 +536,9 @@ export default function App() {
         <footer className="mt-6 text-center text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} 素食掃描儀</p>
         </footer>
+        
+        {/* 離線通知 */}
+        <OfflineNotification />
       </div>
     );
   };

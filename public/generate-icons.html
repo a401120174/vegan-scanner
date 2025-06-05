@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate PWA Icons</title>
+  <script>
+    window.onload = function() {
+      const sizes = [192, 384, 512];
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+      
+      img.onload = function() {
+        sizes.forEach(size => {
+          canvas.width = size;
+          canvas.height = size;
+          ctx.fillStyle = "#4CAF50";
+          ctx.fillRect(0, 0, size, size);
+          
+          // Draw text
+          ctx.fillStyle = "white";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          
+          // Large text - "素食"
+          const mainFontSize = size * 0.25;
+          ctx.font = `bold ${mainFontSize}px Arial`;
+          ctx.fillText("素食", size/2, size/2 - mainFontSize/4);
+          
+          // Smaller text - "掃描儀"
+          const subFontSize = size * 0.15;
+          ctx.font = `bold ${subFontSize}px Arial`;
+          ctx.fillText("掃描儀", size/2, size/2 + mainFontSize/2);
+          
+          const link = document.createElement("a");
+          link.download = `icon-${size}x${size}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.textContent = `Download ${size}x${size} icon`;
+          document.body.appendChild(link);
+          document.body.appendChild(document.createElement("br"));
+        });
+      };
+      
+      img.src = "/icons/base-icon.svg";
+    };
+  </script>
+</head>
+<body>
+  <h1>Generate PWA Icons</h1>
+  <p>Click on the links below to download the icons:</p>
+</body>
+</html>
+
