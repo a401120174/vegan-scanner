@@ -50,7 +50,7 @@ export function ScanPage({
               食品掃描
             </CardTitle>
             <CardDescription className="text-center">
-              拍攝食品包裝以識別其成分
+              拍攝食品成分表以識別其成分
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">

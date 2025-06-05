@@ -33,7 +33,7 @@ export function HomePage({ onScanClick }: HomePageProps) {
       answer: (
         <div className="space-y-4">
           <p>我們使用 AI 圖像辨識技術與成分比對模型，來判斷食品是否符合不同的素食標準。</p>
-          <p>當您拍下食品包裝或成分表，我們的系統會分析其中的關鍵字，交叉比對常見的動物性成分（如「魚露」、「雞肉萃取」、「蛋白」等），並結合專業素食分類（全素、蛋奶素、五辛素）給出判斷結果。</p>
+          <p>當您拍下食品成分表，我們的系統會分析其中的關鍵字，交叉比對常見的動物性成分（如「魚露」、「雞肉萃取」、「蛋白」等），並結合專業素食分類（全素、蛋奶素、五辛素）給出判斷結果。</p>
           <p>我們的目標是協助使用者更方便地識別每日飲食中的成分，降低誤食風險。</p>
         </div>
       )
@@ -57,7 +57,7 @@ export function HomePage({ onScanClick }: HomePageProps) {
         <div className="space-y-4">
           <ol className="list-decimal list-inside space-y-2">
             <li>開啟 App 後，點選「開始拍照」</li>
-            <li>對準食品的成分標示或外包裝正面</li>
+            <li>對準食品的成分標示</li>
             <li>點擊拍照按鈕後，系統會自動分析內容</li>
             <li>幾秒鐘內，即可看到食品是否為全素、蛋奶素、五辛素或非素食</li>
             <li>分析結果會附上「成分說明」與「風險標示」</li>
@@ -89,12 +89,12 @@ export function HomePage({ onScanClick }: HomePageProps) {
               素食掃描器
             </CardTitle>
             <CardDescription className="text-center mb-4">
-              快速辨識食品包裝是否為素食可食用！
+              快速辨識食品是否為素食可食用！
             </CardDescription>
           </CardHeader>
           <CardContent className="mb-6">
             <p className="text-center text-muted-foreground">
-              只需拍攝食品包裝照片，我們的智能AI系統將立即告訴您該食品是否適合您的飲食需求。
+              只需拍攝食品成分照片，我們的智能AI系統將立即告訴您該食品是否適合您的飲食需求。
             </p>
           </CardContent>
         

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "素食掃描儀 | 快速辨識食品是否為素食",
-  description: "拍攝食品包裝照片，立即辨識是否為素食可食用品",
+  description: "拍攝食品成分表，立即辨識是否為素食可食用品",
   icons: {
     icon: [
       {
