@@ -1,6 +1,6 @@
 // 離線模式通知元件
 import { useEffect, useState } from 'react';
-import { AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { WifiOff } from 'lucide-react';
 
 export function OfflineNotification() {
   const [isOffline, setIsOffline] = useState(false);

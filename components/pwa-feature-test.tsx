@@ -25,7 +25,7 @@ export function PWAFeatureTest() {
       // 檢查安裝狀態
       const isInStandaloneMode = 
         window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as any).standalone ||
+        ('standalone' in window.navigator && (window.navigator as Navigator & {standalone?: boolean}).standalone) ||
         document.referrer.includes('android-app://');
       
       // 檢查 Cache Storage API
@@ -131,7 +131,7 @@ export function PWAFeatureTest() {
       
       {!pwaFeatures.isInstalled && (
         <p className="mt-3 text-xs text-blue-600">
-          點擊瀏覽器選單中的"安裝"或"添加到主屏幕"來安裝此應用。
+          點擊瀏覽器選單中的[安裝]或[添加到主屏幕]來安裝此應用。
         </p>
       )}
     </div>

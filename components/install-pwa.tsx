@@ -46,7 +46,7 @@ export function InstallPWA() {
     await installPrompt.prompt();
     
     // 等待使用者回應提示
-    const { outcome } = await installPrompt.userChoice;
+    await installPrompt.userChoice;
     
     // 無論結果如何，清除儲存的提示
     setInstallPrompt(null);
