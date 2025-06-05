@@ -109,6 +109,6 @@ const withPWAConfig = withPWA({
 });
 
 // 應用 PWA 配置到 Next.js 配置
-const pwaConfig = withPWAConfig(nextConfig);
+const pwaConfig = withPWAConfig(nextConfig as any);
 
 export default pwaConfig;
