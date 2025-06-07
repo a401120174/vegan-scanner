@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { HomePage } from "@/components/pages/HomePage";
 import { ScanPage } from "@/components/pages/ScanPage";
 import { ResultPage, ScanResult } from "@/components/pages/ResultPage";
+import SafeAreaWrapper from '@/components/ui/safeAreaWrapper';
 
 // 頁面類型枚舉
 enum PageType {
@@ -191,5 +192,7 @@ export default function App() {
     }
   };
 
-  return renderCurrentPage();
+  return <SafeAreaWrapper>
+    {renderCurrentPage()}
+  </SafeAreaWrapper> 
 }

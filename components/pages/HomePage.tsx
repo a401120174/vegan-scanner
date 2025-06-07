@@ -68,7 +68,7 @@ export function HomePage({ onScanClick }: HomePageProps) {
   ];
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-amber-50 to-green-50">
+    <div className="flex flex-col items-center bg-gradient-to-b from-amber-50 to-green-50">
       {/* Banner Image - Full Width */}
       <div className="w-full max-w-4xl mb-2 drop-shadow-sm">
         <AspectRatio ratio={3/2}>

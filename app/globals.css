@@ -112,6 +112,22 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* html, body {
+  background-color: #f8f8f8;
+  height: 100%;
+  margin: 0;
+} */
+
+/* body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+} */
+
+/* body {
+  padding-top: 30px;
+  padding-bottom: 30px;
+} */
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

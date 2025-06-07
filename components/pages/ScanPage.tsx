@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { 
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -30,7 +29,7 @@ export function ScanPage({
   canvasRef
 }: ScanPageProps) {
   return (
-    <div className="flex flex-col min-h-screen w-full max-w-md mx-auto px-4 py-6 bg-gradient-to-b from-amber-50 to-green-50">
+    <div className="flex flex-col w-full max-w-md mx-auto px-4 py-6 bg-gradient-to-b from-amber-50 to-green-50">
       {/* Header with back button */}
       <header className="flex items-center mb-6">
         <Button 
@@ -109,12 +108,9 @@ export function ScanPage({
                   如何使用？
                 </Button>
               </SheetTrigger>
-              <SheetContent>
+              <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-xl p-6">
                 <SheetHeader>
-                  <SheetTitle>使用說明</SheetTitle>
-                  <SheetDescription>
-                    了解如何使用素食掃描儀
-                  </SheetDescription>
+                  <SheetTitle>如何使用素食掃描儀</SheetTitle>
                 </SheetHeader>
                 <div className="grid gap-4 py-4">
                   <p>1. 將食品包裝上的成分表清晰地放入相機框內</p>

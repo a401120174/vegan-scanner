@@ -71,7 +71,7 @@ const getResultInfo = (type: "全素" | "蛋奶素" | "五葷素" | "非素食" 
 export function ResultPage({ scanResult, scanImage, scanId, onBackClick, onHomeClick, onRescanClick }: ResultPageProps) {
   if (!scanResult) {
     return (
-      <div className="flex flex-col min-h-screen w-full max-w-md mx-auto px-4 py-6 bg-gradient-to-b from-amber-50 to-green-50">
+      <div className="flex flex-col w-full max-w-md mx-auto px-4 py-6 bg-gradient-to-b from-amber-50 to-green-50">
         <header className="flex items-center mb-6">
           <Button 
             variant="link" 
