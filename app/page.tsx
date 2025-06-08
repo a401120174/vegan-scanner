@@ -23,7 +23,6 @@ export default function App() {
   const [hasCamera, setHasCamera] = useState<boolean>(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const scanId = `scan-${Date.now()}`;
   
   // 重置掃描狀態函數
   const resetScanState = () => {
@@ -42,11 +41,11 @@ export default function App() {
       
       try {
         stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: 'environment',
-            width: { ideal: 1080 },
+          video: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
             height: { ideal: 1080 }
-          } 
+          }
         });
         
         if (videoRef.current) {
@@ -123,20 +122,10 @@ export default function App() {
       
       const data = await response.json();
       
-      // 上傳成功，將結果保存
-      const resultData = {
-        ocrText: data.ocrText,
-        result: data.result,
-        timestamp: new Date().toISOString()
-      };
-      
       // 保存照片
       const imageUrl = URL.createObjectURL(blob);
       setScanImage(imageUrl);
-      setScanResult(resultData);
-      
-      // 保存到本地存儲 (選擇性的，可以移除)
-      localStorage.setItem(scanId, JSON.stringify(resultData));
+      setScanResult(data);
       
       // 切換到結果頁面
       setCurrentPage(PageType.RESULT);
@@ -172,7 +161,6 @@ export default function App() {
           <ResultPage 
             scanResult={scanResult}
             scanImage={scanImage}
-            scanId={scanId}
             onBackClick={() => {
               resetScanState();
               setCurrentPage(PageType.SCAN);

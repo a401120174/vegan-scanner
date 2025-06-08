@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import vision from '@google-cloud/vision';
 import path from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const gcvBase64Key = process.env.GCV_BASE_64!;
 const keyPath = path.resolve('/tmp', 'gcv-key.json');
@@ -14,7 +15,59 @@ if (!existsSync(keyPath)) {
 const visionClient = new vision.ImageAnnotatorClient({ keyFilename: keyPath });
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+
+if (!GEMINI_API_KEY) {
+  throw new Error('GEMINI_API_KEY is not set');
+}
+
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+  generationConfig: {
+    temperature: 0.4,
+    topP: 1,
+  },
+  systemInstruction: `
+你是營養專家，請根據 ingredients 成分列表，判斷是否含有不符合素食原則的成分，並回傳以下 JSON 格式（使用繁體中文）：
+
+{
+  "flags": [ { "ingredient": "食材名稱", "level": "注意" | "警告" } ],
+  "reasoning": ["簡要說明（可多條，含中文翻譯）"],
+  "suggestion": "提醒或外語詢問語句，若無請回傳空字串",
+  "type": "ok" | "warning" | "no"
+}
+
+分類規則：
+- 「警告」：豬肉、牛肉、雞肉、魚、蝦、明膠、魚露、雞粉、動物萃取物等。
+  → 說明：「[成分] 為明確動物性來源，不符合素食原則。」
+- 「注意」：
+  1. 動物來源（如蜂蜜、乳清、蛋白等）：
+     → 「[成分] 為動物來源成分，大部分蛋奶素食者可接受，但嚴格素食者會避免，請謹慎評估。」
+  2. 五辛類（蔥、蒜、韭菜、洋蔥等）：
+     → 「[成分] 為五辛成分，大部分五辛素食者可接受，但嚴格素食者會避免，請謹慎評估。」
+  3. 模糊成分（香料、調味料、蛋白質水解物等）：
+     → 「[成分] 可能含有動物性或五辛成分，請謹慎評估。」
+
+特殊處理：
+- 若模糊成分後方標示為「植物性」、「植物來源」、「植物萃取物」，則不列入 flags，不需說明或提醒。
+- 若 flags 含模糊成分，請補充 suggestion：
+  「[成分A 和 成分B] 的來源可能包含動物性或五辛成分，建議查看詳細標示或詢問廠商。您可以說：「這個產品有包含動物性或五辛成分嗎？」」
+
+type 判斷：
+- ok：無疑慮（flags 為空）
+- warning：含「注意」級成分
+- no：含任一「警告」級成分
+- 字數不足（<20字）或格式錯誤：flags 為空，reasoning 加上「資訊不足，無法判斷是否為有效成分列表」，result 為 "warning"
+
+其他語言：
+- reasoning 中提到非中文成分，請用括號補充中文翻譯（如：gelatin（明膠））
+- 若 ingredients 為外語，suggestion 中請補充當地常見動物性隱藏成分提醒，並提供簡單詢問語句，例如：「これは動物由来の原材料が入っていますか？」
+
+請僅回傳合法 JSON，禁止加入 Markdown、註解或多餘說明文字。所有欄位皆為必填，若無內容請填空字串 ""。
+  `,
+});
+
 
 function parseJsonBlock(text: string): Record<string, string | boolean | string[]> {
   // 1. 擷取 ```json … ``` 之間的內容
@@ -45,48 +98,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '未偵測到文字, 請明確拍攝食品成分表' }, { status: 400 });
     }
 
-    // 2. Gemini 處理
-const prompt = `
-你是營養專家。請根據提供的 ingredients 列表，判斷這個食品是否屬於以下分類之一，並說明原因。
-
-請根據以下分類標準進行判斷：
-
-1.「全素」：完全不含任何動物性成分，也不含五辛（如蔥、蒜、蒜粉、蔥粉等）
-2.「蛋奶素」：可含蛋與奶，但不含肉類與五辛
-3.「五葷素」：不含肉類，但含五辛成分（蔥、蒜、洋蔥等）
-4.「非素食」：含有肉、魚、雞、牛、豬、海鮮、動物萃取物、明膠、魚露、蜂蜜、豬油、雞粉等明確動物性成分
-5.「無法判斷」：若 ingredients 資訊過少、不清楚、非成分表格式等，請明確說明並標為無法判斷
-
-以下是你應回傳的 JSON 格式（使用繁體中文）：
-
-{
-  "type": "全素" | "蛋奶素" | "五葷素" | "非素食" | "無法判斷",
-  "reasoning": "簡要說明為何屬於此分類或為何無法判斷",
-  "riskyKeywords": ["出現的疑似動物性或五辛關鍵字"]
-}
-
-請特別注意以下：
-- 以下視為五辛：蔥、蒜、蔥粉、蒜粉、青蔥、洋蔥、大蒜萃取物等
-- 以下視為動物來源：雞、豬、牛、魚、蝦、動物萃取物、明膠、乳清、蜂蜜、魚露、豬油、雞粉、動物脂肪等
-- 若 ingredients 太短（少於 20 字）或無法辨認內容，也請回傳「無法判斷」
-- 如果 ingredients 中提到「與肉類同一產線製造」或「生產線可能含有蛋、魚、牛奶成分」等資訊，不影響素食分類判定。但請在 reasoning 補充說明：「若您對生產線混用有所顧慮，請自行判斷是否食用。」
-
-請務必依格式回傳有效 JSON，不要加註說明文字或 Markdown，僅回傳 JSON。
-`;
-
-    const geminiRes = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: prompt + '\n\n' + ocrText }] }
-        ]
-      })
-    });
-
-    const geminiData = await geminiRes.json();
+    const data = await model.generateContent([
+      { text: ocrText }
+    ]);
     
-    const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
+    const reply = data.response.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
     const result = parseJsonBlock(reply);
 
     return NextResponse.json({ ocrText, result });

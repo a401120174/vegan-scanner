@@ -29,7 +29,22 @@ export function HomePage({ onScanClick }: HomePageProps) {
   const faqItems: FAQItem[] = [
     {
       id: 1,
-      question: "我們怎麼判斷素食？",
+      question: "📸 如何使用這個 App？",
+      answer: (
+        <div className="space-y-4">
+          <ol className="list-decimal list-inside space-y-2">
+            <li>點選「立即開始辨識」</li>
+            <li>對準食品的成分標示</li>
+            <li>點擊拍照按鈕後，系統會自動分析內容</li>
+            <li>幾秒鐘內，即可看到食品是否為素食</li>
+            <li>分析結果會附上「成分說明」與「風險標示」</li>
+          </ol>
+        </div>
+      )
+    },
+    {
+      id: 2,
+      question: "🥦 我們怎麼判斷素食？",
       answer: (
         <div className="space-y-4">
           <p>我們使用 AI 圖像辨識技術與成分比對模型，來判斷食品是否符合不同的素食標準。</p>
@@ -38,58 +53,32 @@ export function HomePage({ onScanClick }: HomePageProps) {
         </div>
       )
     },
-    {
-      id: 2,
-      question: "🔐 隱私問題與安全性",
-      answer: (
-        <div className="space-y-4">
-          <p>我們非常重視您的隱私。</p>
-          <p>您拍攝的照片僅會在您的裝置與我們的伺服器之間進行即時分析，不會被儲存、瀏覽或用於其他用途。</p>
-          <p>我們不會紀錄您的裝置資訊或個人資料，所有處理均符合隱私權保護原則。</p>
-          <p>使用本 App，即表示您同意我們以匿名、暫時的方式使用照片進行分析，處理完畢後即會自動清除。</p>
-        </div>
-      )
-    },
-    {
-      id: 3,
-      question: "📸 如何使用這個 App？",
-      answer: (
-        <div className="space-y-4">
-          <ol className="list-decimal list-inside space-y-2">
-            <li>開啟 App 後，點選「開始拍照」</li>
-            <li>對準食品的成分標示</li>
-            <li>點擊拍照按鈕後，系統會自動分析內容</li>
-            <li>幾秒鐘內，即可看到食品是否為全素、蛋奶素、五辛素或非素食</li>
-            <li>分析結果會附上「成分說明」與「風險標示」</li>
-          </ol>
-        </div>
-      )
-    }
   ];
 
   return (
-    <div className="flex flex-col items-center bg-gradient-to-b from-amber-50 to-green-50">
+    <div className="flex flex-col items-center bg-gradient-to-b from-amber-50 to-green-50 min-h-screen">
       {/* Banner Image - Full Width */}
       <div className="w-full max-w-4xl mb-2 drop-shadow-sm">
         <AspectRatio ratio={3/2}>
           <Image
             src="/banner.png"
-            alt="素食掃描儀"
+            alt="蔬食辨識趣"
             fill
             priority
             className="object-cover rounded-b-xl"
           />
         </AspectRatio>
       </div>
-      <main className="flex flex-col w-full max-w-md mx-auto px-4 py-6">
+      <main className="flex flex-col w-full max-w-md mx-auto px-4 py-6 flex-grow flex-shrink-0">
         
         {/* 標題和簡介 */}
+        <div className="flex-shrink-0">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center mb-2" style={{ color: '#4CAF50' }}>
-              素食掃描器
+            <CardTitle className="text-4xl font-bold text-center mb-2 text-green-800">
+              蔬食辨識趣
             </CardTitle>
             <CardDescription className="text-center mb-4">
-              快速辨識食品是否為素食可食用！
+              快速辨識食品是否為素食！
             </CardDescription>
           </CardHeader>
           <CardContent className="mb-6">
@@ -97,21 +86,25 @@ export function HomePage({ onScanClick }: HomePageProps) {
               只需拍攝食品成分照片，我們的智能AI系統將立即告訴您該食品是否適合您的飲食需求。
             </p>
           </CardContent>
+        </div>
         
         {/* 開始掃描按鈕 */}
-        <Button 
-          variant="default" 
-          size="lg"
-          className="w-full py-6 text-white font-bold rounded-full text-lg shadow-md flex items-center justify-center gap-2 transition-all hover:shadow-lg"
-          style={{ backgroundColor: '#8BC34A', borderColor: '#8BC34A' }}
-          onClick={onScanClick}
-        >
-          <CameraIcon className="h-6 w-6" />
-          開始掃描
-        </Button>
+        <div className="flex-shrink-0">
+          <Button
+            variant="default" 
+            size="lg"
+            className="w-full py-8 text-white font-bold rounded-full text-xl shadow-lg flex items-center justify-center gap-3 transition-all hover:shadow-xl hover:scale-105 bg-green-600"
+            onClick={onScanClick}
+          >
+            <CameraIcon className="h-7 w-7" />
+            立即開始辨識
+          </Button>
+        </div>
+        
+        <div className="flex-grow"></div>
         
         {/* Q&A 區塊 */}
-        <div className="mt-8">
+        <div className="mt-10 flex-shrink-0">
           <h2 className="text-xl text-center font-semibold text-green-800 mb-4">常見問題</h2>
           <div className="space-y-3 w-full">
             {faqItems.map((item) => (
@@ -148,9 +141,9 @@ export function HomePage({ onScanClick }: HomePageProps) {
         </div>
         
         {/* 底部信息 */}
-        <footer className="mt-12 text-center text-xs text-muted-foreground">
+        <footer className="mt-12 text-center text-xs text-muted-foreground flex-shrink-0">
           <p>為健康與環保的生活方式而設計</p>
-          <p className="mt-1">© {new Date().getFullYear()} 素食掃描儀</p>
+          <p className="mt-1">© {new Date().getFullYear()} 蔬食辨識趣</p>
         </footer>
       </main>
     </div>

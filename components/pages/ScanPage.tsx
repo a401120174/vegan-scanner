@@ -54,13 +54,13 @@ export function ScanPage({
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             {hasCamera ? (
-              <div className="w-full aspect-square bg-black rounded-xl overflow-hidden relative">
+              <div className="w-full aspect-[3/4] bg-black rounded-xl overflow-hidden relative mx-[-1.5rem] sm:mx-[-2rem] max-w-none">
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
                 />
                 <canvas ref={canvasRef} className="hidden" />
                 {isLoading && (
@@ -91,11 +91,11 @@ export function ScanPage({
             <Button
               variant="default"
               size="lg"
-              className="bg-green-500 hover:bg-green-600 text-white rounded-full px-8 shadow-md transition-all"
+              className="bg-green-500 hover:bg-green-600 text-white rounded-full px-12 py-6 text-lg font-medium shadow-lg transition-all w-4/5"
               disabled={isLoading || !hasCamera}
               onClick={captureImage}
             >
-              {isLoading ? '處理中...' : '拍攝照片'}
+              {isLoading ? '處理中...' : '開始掃描'}
             </Button>
             
             <Sheet>
@@ -110,11 +110,11 @@ export function ScanPage({
               </SheetTrigger>
               <SheetContent side="bottom" className="h-auto max-h-[80vh] rounded-t-xl p-6">
                 <SheetHeader>
-                  <SheetTitle>如何使用素食掃描儀</SheetTitle>
+                  <SheetTitle>如何使用蔬食辨識趣</SheetTitle>
                 </SheetHeader>
                 <div className="grid gap-4 py-4">
                   <p>1. 將食品包裝上的成分表清晰地放入相機框內</p>
-                  <p>2. 點擊「拍攝照片」按鈕</p>
+                  <p>2. 點擊「開始掃描」按鈕</p>
                   <p>3. 等待分析結果</p>
                   <p>4. 查看食品是否為素食可食用</p>
                 </div>
@@ -125,7 +125,7 @@ export function ScanPage({
       </main>
       
       <footer className="mt-6 text-center text-xs text-muted-foreground">
-        <p>© {new Date().getFullYear()} 素食掃描儀</p>
+        <p>© {new Date().getFullYear()} 蔬食辨識趣</p>
       </footer>
     </div>
   );
