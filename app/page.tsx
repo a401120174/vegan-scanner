@@ -5,6 +5,7 @@ import { HomePage } from "@/components/pages/HomePage";
 import { ScanPage } from "@/components/pages/ScanPage";
 import { ResultPage, ScanResult } from "@/components/pages/ResultPage";
 import SafeAreaWrapper from '@/components/ui/safeAreaWrapper';
+import { event } from '@/lib/gtag';
 
 // 頁面類型枚舉
 enum PageType {
@@ -140,7 +141,10 @@ export default function App() {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case PageType.HOME:
-        return <HomePage onScanClick={() => setCurrentPage(PageType.SCAN)} />;
+        return <HomePage onScanClick={() => {
+          event('scan_start', { method: 'button_click' });
+          setCurrentPage(PageType.SCAN)
+        }} />;
       case PageType.SCAN:
         return (
           <ScanPage 
