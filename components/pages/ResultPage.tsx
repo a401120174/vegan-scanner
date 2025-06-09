@@ -4,7 +4,9 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, AlertCircle, XCircle, HelpCircle } from "lucide-react"; // Import icons
+import { CheckCircle, AlertCircle, XCircle, HelpCircle, ThumbsUp, ThumbsDown } from "lucide-react"; // Added ThumbsUp, ThumbsDown
+import { useState } from "react"; // Added useState import
+import { event } from "@/lib/gtag";
 
 type FlagLevel = "caution" | "warning";
 type ResultType = "ok" | "caution" | "warning" | "unknown";
@@ -42,6 +44,27 @@ const getResultInfo = (type: ResultType): string => {
 };
 
 export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, onRescanClick }: ResultPageProps) {
+  // Add state for feedback
+  const [feedbackGiven, setFeedbackGiven] = useState<'up' | 'down' | null>(null);
+  const [showFeedbackThanks, setShowFeedbackThanks] = useState(false);
+
+  // Feedback handler function
+  const handleFeedback = (type: 'up' | 'down') => {
+    setFeedbackGiven(type);
+    setShowFeedbackThanks(true);
+    
+    // Hide the thank you message after 3 seconds
+    setTimeout(() => {
+      setShowFeedbackThanks(false);
+    }, 3000);
+
+    event('feedback_given', {
+      feedback_type: type,
+      scan_result: scanResult?.ocrText || '',
+    });
+    
+  };
+  
   if (!scanResult) {
     return (
       <div className="flex flex-col w-full max-w-md mx-auto px-4 py-6 bg-gradient-to-b from-amber-50 to-green-50">
@@ -229,6 +252,36 @@ export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, on
                 <div className="pl-4 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-s text-gray-600">
                   <p className="whitespace-pre-wrap">{scanResult.ocrText}</p>
                 </div>
+              </section>
+              
+              {/* Feedback section */}
+              <section className="space-y-2">
+                <h3 className="text-lg font-semibold text-left">這個結果是否對你有幫助？</h3>
+                <div className="flex items-center justify-center gap-8 py-2">
+                  <Button 
+                    variant="outline" 
+                    className={`flex items-center gap-2 px-6 py-2 ${feedbackGiven === 'up' ? 'bg-green-100 border-green-500' : ''}`} 
+                    onClick={() => handleFeedback('up')}
+                    disabled={feedbackGiven !== null}
+                  >
+                    <ThumbsUp className="h-5 w-5" />
+                    有幫助
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className={`flex items-center gap-2 px-6 py-2 ${feedbackGiven === 'down' ? 'bg-red-100 border-red-500' : ''}`} 
+                    onClick={() => handleFeedback('down')}
+                    disabled={feedbackGiven !== null}
+                  >
+                    <ThumbsDown className="h-5 w-5" />
+                    沒幫助
+                  </Button>
+                </div>
+                {showFeedbackThanks && (
+                  <div className="text-center text-green-600 animate-fade-in py-2">
+                    感謝您的反饋！我們會繼續改進。
+                  </div>
+                )}
               </section>
             </div>
           </CardContent>
