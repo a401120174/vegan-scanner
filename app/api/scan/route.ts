@@ -78,7 +78,7 @@ type 判斷：
 - ok：無疑慮（flags 為空）
 - caution：flags 中含有「caution」級成分，且無「warning」級成分 or 
 - warning：flags 中含有「warning」級成分
-- unknown：字數不足（<20字）或格式錯誤或無法判斷是否為有效成分列表」
+- unknown：成分字數不足（<20字）或格式錯誤或無法判斷是否為有效成分列表」
 
 特殊情境：
 - type 為 "unknown"時，reasoning 加上「未偵測到成分，請明確拍攝食品成分表」

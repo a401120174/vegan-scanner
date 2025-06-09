@@ -222,6 +222,7 @@ export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, on
               )}
 
               {/* 分析說明 */}
+              {scanResult.result.reasoning.length > 0 && (
               <section className="space-y-2">
                 <h3 className="text-lg font-semibold text-left">分析說明</h3>
                 <div className={`p-4 rounded-lg text-sm border ${scanResult.result.type === 'warning' 
@@ -235,6 +236,7 @@ export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, on
                   </ul>
                 </div>
               </section>
+              )}
 
               {/* 建議 */}
               {scanResult.result.suggestion && scanResult.result.suggestion.trim() !== '' && (
