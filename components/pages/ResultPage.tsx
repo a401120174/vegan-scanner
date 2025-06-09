@@ -6,14 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, AlertCircle, XCircle, HelpCircle } from "lucide-react"; // Import icons
 
+type FlagLevel = "caution" | "warning";
+type ResultType = "ok" | "caution" | "warning" | "unknown";
+
 // API返回的分析結果類型
 export interface ScanResult {
   ocrText: string;
   result: {
-    flags: Array<{ ingredient: string; level: "注意" | "警告" }>;
+    flags: Array<{ ingredient: string; level: FlagLevel }>;
     reasoning: string[];
     suggestion: string;
-    type: "ok" | "warning" | "no";
+    type: ResultType;
   };
 }
 
@@ -25,13 +28,13 @@ interface ResultPageProps {
   onRescanClick: () => void;
 }
 
-const getResultInfo = (type: "ok" | "warning" | "no" | 'unknown'): string => {
+const getResultInfo = (type: ResultType): string => {
   switch (type) {
     case "ok":
       return '此產品不含任何動物性或五辛成分，符合全素食飲食原則。'
-    case "warning":
+    case "caution":
       return '此產品含有部分素食者可能會避開的成分（如：蛋、奶、蜂蜜或蔥蒜五辛等）。';
-    case "no":
+    case "warning":
       return '此產品含有明確的動物性成分（如肉類、魚介、明膠等），不符合素食者飲食原則。';
     default:
       return '無法判斷食品類型，可能不是食品成分表或資訊過少，無法判斷是否符合素食。'
@@ -78,13 +81,13 @@ export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, on
   const resultInfo = getResultInfo(scanResult.result.type);
   
   // Helper function to get the icon based on result type
-  const getResultIcon = (type: "ok" | "warning" | "no") => {
+  const getResultIcon = (type: ResultType) => {
     switch (type) {
       case "ok":
         return <CheckCircle className="h-12 w-12" />;
-      case "warning":
+      case "caution":
         return <AlertCircle className="h-12 w-12" />;
-      case "no":
+      case "warning":
         return <XCircle className="h-12 w-12" />;
       default:
         return <HelpCircle className="h-12 w-12" />;
@@ -92,13 +95,13 @@ export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, on
   };
 
   // Get result icon color based on type
-  const getResultIconColor = (type: "ok" | "warning" | "no") => {
+  const getResultIconColor = (type: ResultType) => {
     switch (type) {
       case "ok":
         return "text-green-600";
-      case "warning":
+      case "caution":
         return "text-amber-600";
-      case "no":
+      case "warning":
         return "text-red-600";
       default:
         return "text-gray-600";
@@ -106,11 +109,11 @@ export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, on
   };
 
   // Get badge color based on level
-  const getFlagBadgeStyle = (level: "注意" | "警告") => {
+  const getFlagBadgeStyle = (level: "caution" | "warning") => {
     switch (level) {
-      case "警告":
+      case "warning":
         return "border-red-400 bg-red-100 text-red-800";
-      case "注意":
+      case "caution":
         return "border-amber-400 bg-amber-50 text-amber-800";
       default:
         return "border-red-300 text-red-700";
@@ -198,7 +201,7 @@ export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, on
               {/* 分析說明 */}
               <section className="space-y-2">
                 <h3 className="text-lg font-semibold text-left">分析說明</h3>
-                <div className={`p-4 rounded-lg text-sm border ${scanResult.result.type === 'no' 
+                <div className={`p-4 rounded-lg text-sm border ${scanResult.result.type === 'warning' 
                   ? 'bg-red-50 border-red-200' 
                   : 'bg-muted border-slate-200'}`}
                 >
@@ -222,8 +225,8 @@ export function ResultPage({ scanResult, scanImage, onBackClick, onHomeClick, on
 
               {/* OCR 識別文字 */}
               <section className="space-y-2">
-                <h3 className="text-lg font-semibold text-left">識別文字</h3>
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+                <h3 className="text-lg font-semibold text-left">識別出的文字</h3>
+                <div className="pl-4 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-s text-gray-600">
                   <p className="whitespace-pre-wrap">{scanResult.ocrText}</p>
                 </div>
               </section>

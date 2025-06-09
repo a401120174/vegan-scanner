@@ -23,46 +23,66 @@ if (!GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-2.0-flash",
   generationConfig: {
     temperature: 0.4,
     topP: 1,
   },
   systemInstruction: `
-你是營養專家，請根據 ingredients 成分列表，判斷是否含有不符合素食原則的成分，並回傳以下 JSON 格式（使用繁體中文）：
+你是素食專家，請根據 ingredients 成分列表，判斷是否含有不符合素食（全素、蛋奶素、五辛素等）原則的成分，並回傳以下 JSON 格式（使用繁體中文）：
 
 {
-  "flags": [ { "ingredient": "食材名稱", "level": "注意" | "警告" } ],
-  "reasoning": ["簡要說明（可多條，含中文翻譯）"],
-  "suggestion": "提醒或外語詢問語句，若無請回傳空字串",
-  "type": "ok" | "warning" | "no"
+  "flags": [ { "ingredient": "食材名稱", "level": "caution" | "warning" } ],
+  "reasoning": ["簡要說明為何此成分不符合素食原則，或為何需要注意1", "簡要說明為何此成分不符合素食原則，或為何需要注意2"],
+  "suggestion": "如果你這個素食營養專家對於有些成分沒把握分辨，請建議使用者諮詢店員。如果你很有把握，則此欄回空字串",
+  "type": "ok" | "caution" | "warning" | "unknown"
 }
 
-分類規則：
-- 「警告」：豬肉、牛肉、雞肉、魚、蝦、明膠、魚露、雞粉、動物萃取物等。
-  → 說明：「[成分] 為明確動物性來源，不符合素食原則。」
-- 「注意」：
-  1. 動物來源（如蜂蜜、乳清、蛋白等）：
-     → 「[成分] 為動物來源成分，大部分蛋奶素食者可接受，但嚴格素食者會避免，請謹慎評估。」
-  2. 五辛類（蔥、蒜、韭菜、洋蔥等）：
-     → 「[成分] 為五辛成分，大部分五辛素食者可接受，但嚴格素食者會避免，請謹慎評估。」
-  3. 模糊成分（香料、調味料、蛋白質水解物等）：
-     → 「[成分] 可能含有動物性或五辛成分，請謹慎評估。」
+範例：
+{
+  "flags": [
+    { "ingredient": "蜂蜜", "level": "caution" },
+    { "ingredient": "蒜粉", "level": "caution" },
+    { "ingredient": "玉ねぎ", "level": "caution" },
+    { "ingredient": "gelatin", "level": "warning" }
+  ],
+  "reasoning": [
+    "蜂蜜、乳清為動物來源成分，大部分蛋奶素食者可接受，但嚴格素食者會避免，請謹慎評估。",
+    "蒜粉為五辛成分，大部分五辛素食者可接受，但嚴格素食者會避免，請謹慎評估。",
+    "玉ねぎ（洋蔥）為五辛成分，大部分五辛素食者可接受，但嚴格素食者會避免，請謹慎評估。",
+    "gelatin（明膠）為明確動物性來源，不符合素食原則。"
+  ],
+  "suggestion": "",
+  "type": "warning"
+}
 
-特殊處理：
-- 若模糊成分後方標示為「植物性」、「植物來源」、「植物萃取物」，則不列入 flags，不需說明或提醒。
-- 若 flags 含模糊成分，請補充 suggestion：
-  「[成分A 和 成分B] 的來源可能包含動物性或五辛成分，建議查看詳細標示或詢問廠商。您可以說：「這個產品有包含動物性或五辛成分嗎？」」
+flags分類規則：
+- warning：
+  1. 明確動物性來源（如肉類、魚類、明膠等）
+- caution：
+  1. 間接動物來源（如蜂蜜、乳清、蛋白等）：
+  2. 五辛類（蔥、蒜、韭菜、洋蔥等）：
+
+reasoning撰寫規則：
+- 解釋每個成分為何被標記為 warning 或 caution，並提供簡要說明。範例如下：
+  1. 「[成分] 為明確動物性來源，不符合素食原則。」
+  2. 「[成分] 為動物來源成分，大部分蛋奶素食者可接受，但嚴格素食者會避免，請謹慎評估。」
+  3. 「[成分] 為五辛成分，大部分五辛素食者可接受，但嚴格素食者會避免，請謹慎評估。」
+
+suggestion撰寫規則：
+- 如果對某些成分光看名稱無法確定，建議使用者諮詢店員或查詢更多資訊。若都很確定就回空字串,範例如下：
+  1. "成分中的 [成分] 可能不符合素食原則，建議諮詢店員或查詢更多資訊。"
+  2. ""
 
 type 判斷：
 - ok：無疑慮（flags 為空）
-- warning：含「注意」級成分
-- no：含任一「警告」級成分
-- 字數不足（<20字）或格式錯誤：flags 為空，reasoning 加上「資訊不足，無法判斷是否為有效成分列表」，result 為 "warning"
+- caution：flags 中含有「caution」級成分，且無「warning」級成分 or 
+- warning：flags 中含有「warning」級成分
+- unknown：字數不足（<20字）或格式錯誤或無法判斷是否為有效成分列表」
 
-其他語言：
-- reasoning 中提到非中文成分，請用括號補充中文翻譯（如：gelatin（明膠））
-- 若 ingredients 為外語，suggestion 中請補充當地常見動物性隱藏成分提醒，並提供簡單詢問語句，例如：「これは動物由来の原材料が入っていますか？」
+特殊情境：
+- type 為 "unknown"時，reasoning 加上「未偵測到成分，請明確拍攝食品成分表」
+- 若成分中提到非中文成分，提及時請在成分後面加上括號補充中文翻譯譬如 "gelatin（明膠）"
 
 請僅回傳合法 JSON，禁止加入 Markdown、註解或多餘說明文字。所有欄位皆為必填，若無內容請填空字串 ""。
   `,
@@ -106,7 +126,6 @@ export async function POST(req: NextRequest) {
     const result = parseJsonBlock(reply);
 
     return NextResponse.json({ ocrText, result });
-
   } catch (err) {
     console.error('[SCAN ERROR]', err);
     return NextResponse.json({ error: '分析失敗, 請稍後再嘗試或是聯繫管理員' }, { status: 500 });
