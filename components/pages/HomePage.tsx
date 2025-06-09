@@ -12,6 +12,7 @@ import {
   SheetClose 
 } from "@/components/ui/sheet";
 import { useState } from "react";
+import { event } from "@/lib/gtag";
 
 interface HomePageProps {
   onScanClick: () => void;
@@ -109,6 +110,10 @@ export function HomePage({ onScanClick }: HomePageProps) {
           <div className="space-y-3 w-full">
             {faqItems.map((item) => (
               <Sheet key={item.id} open={openSheet === item.id} onOpenChange={(open) => {
+                event('faq_click', {
+                  event_category: 'faq',
+                  event_label: item.question,
+                });
                 setOpenSheet(open ? item.id : null);
               }}>
                 <SheetTrigger asChild>

@@ -46,7 +46,7 @@ export function ScanPage({
         <Card className="w-full border border-green-100 shadow-sm rounded-xl bg-white/80 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center text-primary">
-              食品掃描
+              成分辨識
             </CardTitle>
             <CardDescription className="text-center">
               拍攝食品成分表以識別其成分
@@ -95,7 +95,7 @@ export function ScanPage({
               disabled={isLoading || !hasCamera}
               onClick={captureImage}
             >
-              {isLoading ? '處理中...' : '開始掃描'}
+              {isLoading ? '處理中...' : '開始辨識'}
             </Button>
             
             <Sheet>
@@ -114,7 +114,7 @@ export function ScanPage({
                 </SheetHeader>
                 <div className="grid gap-4 py-4">
                   <p>1. 將食品包裝上的成分表清晰地放入相機框內</p>
-                  <p>2. 點擊「開始掃描」按鈕</p>
+                  <p>2. 點擊「開始辨識」按鈕</p>
                   <p>3. 等待分析結果</p>
                   <p>4. 查看食品是否為素食可食用</p>
                 </div>

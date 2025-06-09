@@ -72,6 +72,11 @@ export default function App() {
 
   // 拍照並處理
   const captureImage = async () => {
+    event('click_start_scan', {
+      event_category: 'feature_use',
+      event_label: '開始辨識',
+    });
+
     setIsLoading(true);
     setUploadError(null);
     
@@ -142,7 +147,10 @@ export default function App() {
     switch (currentPage) {
       case PageType.HOME:
         return <HomePage onScanClick={() => {
-          event('scan_start', { method: 'button_click' });
+          event('click_go_to_scan', {
+            event_category: 'feature_use',
+            event_label: '立即開始辨識',
+          });
           setCurrentPage(PageType.SCAN)
         }} />;
       case PageType.SCAN:
@@ -151,6 +159,10 @@ export default function App() {
             onBackClick={() => {
               resetScanState();
               setCurrentPage(PageType.HOME);
+              event('click_back', {
+                event_category: 'interaction',
+                event_label: 'back_to_home',
+              });
             }}
             captureImage={captureImage}
             isLoading={isLoading}
@@ -168,14 +180,26 @@ export default function App() {
             onBackClick={() => {
               resetScanState();
               setCurrentPage(PageType.SCAN);
+              event('click_back', {
+                event_category: 'interaction',
+                event_label: 'back_to_scan',
+              });
             }}
             onHomeClick={() => {
               resetScanState();
               setCurrentPage(PageType.HOME);
+              event('click_home', {
+                event_category: 'interaction',
+                event_label: 'back_to_home',
+              });
             }}
             onRescanClick={() => {
               resetScanState();
               setCurrentPage(PageType.SCAN);
+              event('click_back', {
+                event_category: 'interaction',
+                event_label: 'back_to_scan',
+              });
             }}
           />
         );
